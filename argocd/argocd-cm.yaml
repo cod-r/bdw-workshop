@@ -7,5 +7,5 @@ metadata:
   name: argocd-cm
   namespace: argocd
 data:
-  url: https://localhost/argocd
+  url: https://localhost/
   exec.enabled: "true"
