@@ -2,5 +2,7 @@ apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
   name: provider-do
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   package: "crossplane/provider-digitalocean:v0.1.0"

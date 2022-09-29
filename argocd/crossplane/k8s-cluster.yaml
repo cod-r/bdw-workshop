@@ -2,6 +2,8 @@ apiVersion: kubernetes.do.crossplane.io/v1alpha1
 kind: DOKubernetesCluster
 metadata:
   name: k8s-cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   providerConfigRef:
     name: provider-do
