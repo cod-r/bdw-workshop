@@ -1,0 +1,20 @@
+apiVersion: kubernetes.do.crossplane.io/v1alpha1
+kind: DOKubernetesCluster
+metadata:
+  name: k8s-cluster
+spec:
+  providerConfigRef:
+    name: provider-do
+  forProvider:
+    region: fra1
+    version: 1.24.4-do.0
+    nodePools:
+      - size: s-1vcpu-2gb
+        count: 3
+        name: worker-pool
+    maintenancePolicy:
+      startTime: "00:00"
+      day: wednesday
+    autoUpgrade: true
+    surgeUpgrade: false
+    highlyAvailable: false

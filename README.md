@@ -26,3 +26,9 @@ kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/usage.yaml
 ```sh
 curl localhost/foo
 ```
+
+## Install Argo CD
+- [Argo CD initial setup](argocd/initial-setup.md)
+
+## Install Crossplane
+- Crossplane is installed automatically by Argo CD. See [crossplane.yaml](argocd/applications/crossplane.yaml)

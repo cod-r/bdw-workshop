@@ -14,7 +14,7 @@ After applying the manifest Argo CD will manage itself.
 Every push to this repository will be applied automatically by Argo CD.
 
 2. Access the UI
-https://localhost/argocd
+https://localhost/
 
 Username: admin  
 Password

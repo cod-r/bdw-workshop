@@ -7,5 +7,5 @@ metadata:
   name: argocd-cm
   namespace: argocd
 data:
-  url: https://localhost/
+  timeout.reconciliation: 10s
   exec.enabled: "true"
