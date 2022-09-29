@@ -6,7 +6,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
 spec:
   providerConfigRef:
-    name: provider-do
+    name: do-config
   forProvider:
     region: fra1
     version: 1.24.4-do.0
