@@ -1,13 +1,13 @@
-# apiVersion: do.crossplane.io/v1alpha1
-# kind: ProviderConfig
-# metadata:
-#   name: do-config
-#   annotations:
-#     argocd.argoproj.io/sync-wave: "2"
-# spec:
-#   credentials:
-#     source: Secret
-#     secretRef:
-#       namespace: crossplane-system
-#       name: provider-do-secret
-#       key: token
+apiVersion: do.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: do-config
+  annotations:
+    argocd.argoproj.io/sync-wave: "100"
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: provider-do-secret
+      key: token
