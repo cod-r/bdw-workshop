@@ -24,7 +24,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 
 1. Apply the main app that will manage all files in this repository
 ```shell
-kubectl apply -f applications/main-app.yaml
+kubectl apply -f argocd/applications/main-app.yaml
 ```
 After applying the manifest Argo CD will manage itself. 
 Every push to this repository will be applied automatically by Argo CD.
