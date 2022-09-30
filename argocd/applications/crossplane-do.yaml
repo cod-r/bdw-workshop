@@ -11,7 +11,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/cod-r/bdw-workshop.git
-    path: argocd/crossplane-do
+    path: crossplane-do
   destination:
     server: https://kubernetes.default.svc
     namespace: crossplane-do
