@@ -20,6 +20,24 @@ kind create cluster --config kind-config.yaml
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
+Add env to argocd-application-controller:
+```yaml
+    env:
+      - name: "ARGOCD_SYNC_WAVE_DELAY"
+        value: "30"
+```
+
+### Refresh every 10 seconds
+```sh
+kubectl apply -f argocd/argocd-cm.yaml
+```
+Redeploy `argocd-application-controller` for changes to take effect
+
+```sh
+kubectl -n argocd rollout restart statefulset argocd-application-controller
+```
+
+
 ## Make Argo CD manage itself
 
 1. Apply the main app that will manage all files in this repository
