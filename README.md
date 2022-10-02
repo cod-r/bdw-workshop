@@ -27,7 +27,7 @@ Add env to argocd-application-controller:
         value: "30"
 ```
 
-### Refresh every 10 seconds
+### Change refresh interval
 ```sh
 kubectl apply -f argocd/argocd-cm.yaml
 ```

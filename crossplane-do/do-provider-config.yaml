@@ -9,6 +9,6 @@ spec:
   credentials:
     source: Secret
     secretRef:
-      namespace: crossplane-system
+      namespace: crossplane-do
       name: provider-do-secret
       key: token
