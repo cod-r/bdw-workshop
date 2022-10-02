@@ -4,6 +4,5 @@ metadata:
   name: do-provider
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   package: "crossplane/provider-digitalocean:v0.1.0"
