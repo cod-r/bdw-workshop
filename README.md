@@ -69,3 +69,70 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 ```sh
 gcloud container clusters get-credentials gke-cluster
 ```
+
+- create service account and clusterrolebinding on the destination cluster:
+
+```yaml
+kubectl apply -f -<<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argocd
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: argocd
+  namespace: kube-system
+EOF
+```
+
+- get server address
+
+```sh
+kubectl cluster-info
+```
+
+- get certificate and the token
+
+```sh
+TOKEN_SECRET=$(kubectl -n kube-system get sa argocd \
+    -o go-template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}')
+CA_CRT=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{index .data "ca.crt"}}')
+TOKEN=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{.data.token}}' | base64 -d)
+```
+
+- create cluster secret in kind cluster
+
+```yaml
+kubectl apply -f -<<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gke-cluster-conn-secret
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: cluster
+type: Opaque
+stringData:
+  name: gke-cluster
+  server: https://34.118.116.43
+  config: |
+    {
+      "bearerToken": "${TOKEN}",
+      "tlsClientConfig": {
+        "insecure": false,
+        "caData": "${CA_CRT}"
+      }
+    }
+EOF
+```
+
