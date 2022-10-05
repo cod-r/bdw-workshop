@@ -6,6 +6,8 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
+  providerConfigRef:
+    name: gcp-config
   forProvider:
     initialClusterVersion: "1.23"
     location: europe-central2-a
@@ -30,6 +32,8 @@ metadata:
     argocd.argoproj.io/sync-wave: "4"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
+  providerConfigRef:
+    name: gcp-config
   forProvider:
     autoscaling:
       autoprovisioned: false
