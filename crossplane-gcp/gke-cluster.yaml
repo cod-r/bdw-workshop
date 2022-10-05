@@ -13,7 +13,7 @@ spec:
     location: europe-central2-a
     autoscaling:
       autoprovisioningNodePoolDefaults:
-        serviceAccount: sa-test
+        serviceAccount: bdw-workshop@teste-vang.iam.gserviceaccount.com
     networkConfig:
       enableIntraNodeVisibility: true
     addonsConfig:
@@ -43,7 +43,7 @@ spec:
     clusterRef:
       name: gke-cluster
     config:
-      serviceAccount: sa-test
+      serviceAccount: bdw-workshop@teste-vang.iam.gserviceaccount.com
       machineType: g1-small
       sandboxConfig:
         type: gvisor
