@@ -4,6 +4,5 @@ metadata:
   name: gcp-provider
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   package: "crossplane/provider-gcp:v0.21.0"
