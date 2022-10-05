@@ -37,6 +37,7 @@ spec:
   providerConfigRef:
     name: gcp-config
   forProvider:
+    initialNodeCount: 2
     autoscaling:
       enabled: false
     clusterRef:
@@ -58,6 +59,5 @@ spec:
         - "https://www.googleapis.com/auth/servicecontrol"
         - "https://www.googleapis.com/auth/service.management.readonly"
         - "https://www.googleapis.com/auth/trace.append"
-    initialNodeCount: 3
     locations:
       - "europe-central2-a"
