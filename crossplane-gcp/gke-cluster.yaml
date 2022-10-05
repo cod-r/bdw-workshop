@@ -16,6 +16,8 @@ spec:
         serviceAccount: bdw-workshop@teste-vang.iam.gserviceaccount.com
     networkConfig:
       enableIntraNodeVisibility: true
+    loggingService: none
+    monitoringService: none
     addonsConfig:
       gcePersistentDiskCsiDriverConfig:
         enabled: true
