@@ -38,10 +38,7 @@ spec:
     name: gcp-config
   forProvider:
     autoscaling:
-      autoprovisioned: false
-      enabled: true
-      maxNodeCount: 4
-      minNodeCount: 3
+      enabled: false
     clusterRef:
       name: gke-cluster
     config:
