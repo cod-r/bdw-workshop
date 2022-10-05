@@ -1,0 +1,8 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: gcp-provider
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  package: "crossplane/provider-gcp:v0.21.0"

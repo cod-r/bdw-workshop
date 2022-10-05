@@ -1,0 +1,15 @@
+apiVersion: do.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: gcp-config
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  projectID: teste-vang
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-gcp
+      name: provider-gcp-secret
+      key: creds

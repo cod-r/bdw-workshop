@@ -1,0 +1,54 @@
+apiVersion: container.gcp.crossplane.io/v1beta2
+kind: Cluster
+metadata:
+  name: example-cluster
+spec:
+  forProvider:
+    initialClusterVersion: "1.23"
+    location: europe-central2-a
+    autoscaling:
+      autoprovisioningNodePoolDefaults:
+        serviceAccount: sa-test
+    networkConfig:
+      enableIntraNodeVisibility: true
+    addonsConfig:
+      gcePersistentDiskCsiDriverConfig:
+        enabled: true
+    network: "default"
+  writeConnectionSecretToRef:
+    namespace: crossplane-gcp
+    name: gke-conn
+---
+apiVersion: container.gcp.crossplane.io/v1beta1
+kind: NodePool
+metadata:
+  name: crossplane-np
+spec:
+  forProvider:
+    autoscaling:
+      autoprovisioned: false
+      enabled: false
+      maxNodeCount: 3
+      minNodeCount: 3  
+    clusterRef:
+      name: example-cluster
+    config:
+      serviceAccount: sa-test
+      machineType: g1-small
+      sandboxConfig:
+        type: gvisor
+      diskSizeGb: 32
+      diskType: pd-ssd
+      imageType: cos_containerd
+      labels:
+        test-label: crossplane-created
+      oauthScopes:
+      - "https://www.googleapis.com/auth/devstorage.read_only"
+      - "https://www.googleapis.com/auth/logging.write"
+      - "https://www.googleapis.com/auth/monitoring"
+      - "https://www.googleapis.com/auth/servicecontrol"
+      - "https://www.googleapis.com/auth/service.management.readonly"
+      - "https://www.googleapis.com/auth/trace.append"      
+    initialNodeCount: 3
+    locations:
+      - "europe-central2-a"
