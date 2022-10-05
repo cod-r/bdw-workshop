@@ -2,6 +2,9 @@ apiVersion: container.gcp.crossplane.io/v1beta2
 kind: Cluster
 metadata:
   name: example-cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   forProvider:
     initialClusterVersion: "1.23"
@@ -23,13 +26,16 @@ apiVersion: container.gcp.crossplane.io/v1beta1
 kind: NodePool
 metadata:
   name: crossplane-np
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   forProvider:
     autoscaling:
       autoprovisioned: false
       enabled: false
       maxNodeCount: 3
-      minNodeCount: 3  
+      minNodeCount: 3
     clusterRef:
       name: example-cluster
     config:
@@ -43,12 +49,12 @@ spec:
       labels:
         test-label: crossplane-created
       oauthScopes:
-      - "https://www.googleapis.com/auth/devstorage.read_only"
-      - "https://www.googleapis.com/auth/logging.write"
-      - "https://www.googleapis.com/auth/monitoring"
-      - "https://www.googleapis.com/auth/servicecontrol"
-      - "https://www.googleapis.com/auth/service.management.readonly"
-      - "https://www.googleapis.com/auth/trace.append"      
+        - "https://www.googleapis.com/auth/devstorage.read_only"
+        - "https://www.googleapis.com/auth/logging.write"
+        - "https://www.googleapis.com/auth/monitoring"
+        - "https://www.googleapis.com/auth/servicecontrol"
+        - "https://www.googleapis.com/auth/service.management.readonly"
+        - "https://www.googleapis.com/auth/trace.append"
     initialNodeCount: 3
     locations:
       - "europe-central2-a"
