@@ -38,8 +38,6 @@ spec:
     name: gcp-config
   forProvider:
     initialNodeCount: 2
-    autoscaling:
-      enabled: false
     clusterRef:
       name: gke-cluster
     config:
