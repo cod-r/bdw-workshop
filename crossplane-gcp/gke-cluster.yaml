@@ -37,8 +37,8 @@ spec:
   forProvider:
     autoscaling:
       autoprovisioned: false
-      enabled: false
-      maxNodeCount: 3
+      enabled: true
+      maxNodeCount: 4
       minNodeCount: 3
     clusterRef:
       name: gke-cluster
