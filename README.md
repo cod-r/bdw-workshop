@@ -62,3 +62,10 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 
 ## Install Crossplane
 - Crossplane is installed automatically by Argo CD. See [crossplane.yaml](argocd/applications/crossplane.yaml)
+
+
+## GKE
+- Get kubeconfig
+```sh
+gcloud container clusters get-credentials gke-cluster
+```

@@ -1,7 +1,7 @@
 apiVersion: container.gcp.crossplane.io/v1beta2
 kind: Cluster
 metadata:
-  name: example-cluster
+  name: gke-cluster
   annotations:
     argocd.argoproj.io/sync-wave: "3"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
@@ -41,7 +41,7 @@ spec:
       maxNodeCount: 3
       minNodeCount: 3
     clusterRef:
-      name: example-cluster
+      name: gke-cluster
     config:
       serviceAccount: sa-test
       machineType: g1-small
