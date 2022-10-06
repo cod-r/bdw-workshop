@@ -50,6 +50,7 @@ Every push to this repository will be applied automatically by Argo CD.
 2. Access the UI
 https://localhost/
 
+
 Username: admin  
 Password
 ```sh
