@@ -5,4 +5,4 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  package: "crossplane/provider-digitalocean:v0.1.0"
+  package: "crossplane/provider-digitalocean:main"
