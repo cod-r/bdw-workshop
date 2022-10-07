@@ -428,7 +428,7 @@ spec:
     name: do-config
   forProvider:
     region: fra1
-    version: 1.24.4-do.0
+    version: 1.23.10-do.0
     nodePools:
       - size: s-1vcpu-2gb
         count: 1
@@ -495,6 +495,12 @@ CLUSTER_SERVER_ADDRESS=$(kubectl config view --minify -o jsonpath='{.clusters[].
 TOKEN_SECRET=$(kubectl -n kube-system get sa argocd -o go-template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}')
 CA_CRT=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{index .data "ca.crt"}}')
 TOKEN=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{.data.token}}' | base64 -d)
+
+echo $CLUSTER_SERVER_ADDRESS
+echo $TOKEN_SECRET
+echo $CA_CRT
+echo $TOKEN
+
 ```
 
 3. Switch context to the cluster where Argo CD is installed
@@ -570,6 +576,18 @@ EOF
 git add . && git commit  -m "Create app to manage digitalocean k8s cluster" && git push
 ```
 
+4. Check the deployed apps in the new cluster
+```sh
+kubectl config use-context do-fra1-${LC_USER}-k8s-cluster
+kubectl get pods -n monitoring
+```
+
+
+
+
+
+
+
 
 ## GKE
 - Get kubeconfig
@@ -577,8 +595,9 @@ git add . && git commit  -m "Create app to manage digitalocean k8s cluster" && g
 gcloud container clusters get-credentials gke-cluster
 ```
 
-- create service account and clusterrolebinding on the destination cluster:
+## Connect DO external cluster to Argo CD
 
+1. Create serviceaccount and clusterrolebinding on the destination cluster
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
@@ -602,17 +621,26 @@ subjects:
 EOF
 ```
 
-- get server address, certificate and the token
+2. Get server address, certificate and the token from external cluster
 
 ```sh
 CLUSTER_SERVER_ADDRESS=$(kubectl config view --minify -o jsonpath='{.clusters[].cluster.server}')
 TOKEN_SECRET=$(kubectl -n kube-system get sa argocd -o go-template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}')
 CA_CRT=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{index .data "ca.crt"}}')
 TOKEN=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{.data.token}}' | base64 -d)
+
+echo $CLUSTER_SERVER_ADDRESS
+echo $TOKEN_SECRET
+echo $CA_CRT
+echo $TOKEN
 ```
 
-- create cluster secret in kind cluster
+3. Switch context to the cluster where Argo CD is installed
+```sh
+kubectl config use-context CONTEXT_NAME
+```
 
+4. Create cluster secret
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
