@@ -248,9 +248,9 @@ git add . && git commit  -m "deploy kube-prometheus-stack and loki" && git push
 
 ### Access Grafana
 ```sh
-kubectl port-forward svc/grafana 3000:3000
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
 ```
-Open https://localhost:3000
+Open http://localhost:3000
 
 Username: admin  
 Password: prom-operator
