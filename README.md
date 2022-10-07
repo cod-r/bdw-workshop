@@ -423,6 +423,7 @@ metadata:
   name: crossplane-droplet
   annotations:
     crossplane.io/external-name: crossplane-droplet
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   forProvider:
     region: fra1
