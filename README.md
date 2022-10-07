@@ -534,7 +534,14 @@ EOF
 mkdir -p clusters/do-cluster
 ```
 
-2. Create app to manage the new cluster
+2. Add monitoring apps
+```sh
+cp argocd/applications/kube-prometheus-stack-crds.yaml clusters/do-cluster/
+cp argocd/applications/kube-prometheus-stack.yaml clusters/do-cluster/
+cp argocd/applications/loki-stack.yaml clusters/do-cluster/
+```
+
+3. Create app to apply the manifests in the new cluster
 
 ```yaml
 cat > argocd/applications/do-k8s-cluster-manifests.yaml <<EOF
@@ -562,6 +569,7 @@ spec:
 EOF
 git add . && git commit  -m "Create app to manage digitalocean k8s cluster" && git push
 ```
+
 
 ## GKE
 - Get kubeconfig
