@@ -453,7 +453,7 @@ kind: Droplet
 metadata:
   name: ${GH_USERNAME}-crossplane-droplet
   annotations:
-    crossplane.io/external-name: crossplane-droplet
+    crossplane.io/external-name: ${GH_USERNAME}-crossplane-droplet
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   forProvider:
