@@ -383,22 +383,23 @@ spec:
     name: do-config
 EOF
 ```
-### Setup doctl
+5. Setup doctl
 ```sh
-doctl auth init
+doctl auth init -t ${DO_TOKEN}
 ```
-### Check droplet
+
+6. List droplets
 ```sh
 doctl compute droplet list 
 ```
 
-### Delete droplet
+7. Delete droplet
 ```sh
 doctl compute droplet delete ${LC_USER}-crossplane-droplet
 ```
 Wait for droplet to be recreated by Crossplane
 
-- Create k8s cluster
+8. Create k8s cluster
 ```yaml
 cat > crossplane-do/k8s-cluster.yaml <<EOF
 apiVersion: kubernetes.do.crossplane.io/v1alpha1
@@ -427,10 +428,17 @@ spec:
 EOF
 ```
 
-- Get the kubeconfig
+9. Get the kubeconfig
 ```sh
 doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
 ```
+The kubectl context will change.
+
+10. Check cluster connection
+```sh
+kubectl get nodes
+```
+
 
 
 ## GKE
@@ -473,8 +481,8 @@ kubectl cluster-info
 - get certificate and the token
 
 ```sh
-TOKEN_SECRET=$(kubectl -n kube-system get sa argocd \
-    -o go-template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}')
+CLUSTER_SERVER_ADDRESS=$(kubectl config view --minify -o jsonpath='{.clusters[].cluster.server}')
+TOKEN_SECRET=$(kubectl -n kube-system get sa argocd -o go-template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}')
 CA_CRT=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{index .data "ca.crt"}}')
 TOKEN=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{.data.token}}' | base64 -d)
 ```
@@ -493,7 +501,7 @@ metadata:
 type: Opaque
 stringData:
   name: gke-cluster
-  server: https://34.118.116.43
+  server: ${CLUSTER_SERVER_ADDRESS}
   config: |
     {
       "bearerToken": "${TOKEN}",
