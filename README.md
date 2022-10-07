@@ -3,7 +3,7 @@
 ## Prerequisites
 - [docker](https://docs.docker.com/engine/install/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries)
-  - Present alternatives
+  - Or any other kubernetes cluster (Rancher Desktop, k3d, minikube etc.)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 - [doctl](https://docs.digitalocean.com/reference/doctl/how-to/install)
 - [GitHub Account](https://github.com/signup)
@@ -14,7 +14,7 @@
 4. Right upper corner -> Click Fork -> Create Fork
 5. Add your Github Username to an environment variable
 
-IMPORTANT
+**IMPORTANT:** don't miss this step!
 ```sh
 export GH_USERNAME=<your-gh-username>
 ```
@@ -26,78 +26,54 @@ cd bdw-workshop
 ```
 
 # Chapter 1
-
+Initial Argo CD setup
 ## Create kind cluster
-
+Skip this step if you already have a cluster.
 ```sh
 kind create cluster --config kind-config.yaml
 ```
 
 ## Install Argo CD
-
-```shell
+```sh
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
 ### Change refresh interval
-- Create `argocd` directory
-```shell
-mkdir argocd
-```
-
-- Create ConfigMap
-```yaml
-cat > argocd/argocd-cm.yaml <<EOF
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  labels:
-    app.kubernetes.io/name: argocd-cm
-    app.kubernetes.io/part-of: argocd
-  name: argocd-cm
-  namespace: argocd
-data:
-  timeout.reconciliation: 10s
-  exec.enabled: "true"
-EOF
-```
-- Apply ConfigMap
 ```sh
 kubectl apply -f argocd/argocd-cm.yaml
 ```
 
-- Redeploy `argocd-application-controller` for changes to take effect
+Redeploy `argocd-application-controller` for changes to take effect
 
 ```sh
 kubectl -n argocd rollout restart statefulset argocd-application-controller
 ```
 
-### Open Argo CD UI
+### Access Argo CD UI
 ```sh
 kubectl port-forward svc/argocd-server -n argocd 8080:443
-```
-
-Password - mai clar
-```sh
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
 ```
 
 Open https://localhost:8080
 
 Username: admin  
+Password: `run the command below to print the password`
+```sh
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+```
 
 ## Make Argo CD manage itself
 
-1. Create the main Application.  
+### Create the main Application.  
 This app will apply all manifests found in `argocd/applications` directory in this repository.
 
-- Create directories
-```shell
+1. Create directories
+```sh
 mkdir -p argocd/applications
 ```
 
-- Create `main-app.yaml` file
+2. Create `main-app.yaml` file
 ```yaml
 cat > argocd/applications/main-app.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
@@ -123,21 +99,15 @@ spec:
 EOF
 ```
 
-- Apply the manifest
+3. Apply the created manifest
 ```sh
 kubectl apply -f argocd/applications/main-app.yaml
-```
-- Commit and push
-```sh
-git add .
-git commit -m "a gitops test"
-git push
 ```
 
 After applying the manifest we can add other manifests in `argocd/applications` and Argo CD will apply them automatically.
 
 ### Test GitOps
-- Create a simple secret manifest
+1. Create a simple secret manifest
 ```yaml
 cat > argocd/applications/test.yaml <<EOF
 apiVersion: v1
@@ -149,89 +119,22 @@ stringData:
 EOF
 ```
 
-- Commit and push
+2. Commit and push
+```sh
+git commit -a -m "initial argocd setup" && git push
+```
 
-- Verify
+3. Verify secret
 ```sh
 kubectl get secrets
 ```
 
 # Chapter 2
-Day 2 Operations.
-
-## Install an ingress controller
-
-- Deploy ingress-nginx
-```yaml
-cat > argocd/applications/ingress-nginx.yaml <<EOF
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: ingress-nginx
-  namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/kubernetes/ingress-nginx.git
-    path: deploy/static/provider/kind
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: ingress-nginx
-  syncPolicy:
-    automated:
-      prune: true 
-      selfHeal: true
-      allowEmpty: false
-    syncOptions:
-      - CreateNamespace=true
-EOF
-```
-
-- Commit and push
-
-### Test ingress
-- Create ingress for Argo CD
-```yaml
-cat > argocd/argocd-ingress.yaml <<EOF
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  namespace: argocd
-  name: argocd
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-spec:
-  rules:
-    - host: localhost
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: argocd-server
-                port:
-                  number: 443
-EOF
-```
-
-- Commit and push
-- Access the UI via ingress
-https://localhost/
-
-Username: admin  
-Password
-```sh
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
-```
+Day 2 Operations
 
 ## Install monitoring tools
 
-- Deploy kube-prometheus-stack CRDs
+1. Add kube-prometheus-stack CRDs
 ```yaml
 cat > argocd/applications/kube-prometheus-stack-crds.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
@@ -265,7 +168,7 @@ spec:
 EOF
 ```
 
-- Deploy kube-prometheus-stack
+2. Add kube-prometheus-stack
 ```yaml
 cat > argocd/applications/kube-prometheus-stack.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
@@ -287,17 +190,6 @@ spec:
         prometheus:
           prometheusSpec:
             retention: 7d
-        grafana:
-          grafana.ini:
-            server:
-              root_url: http://localhost/grafana
-              domain: localhost
-              serve_from_sub_path: true
-          ingress:
-            enabled: true
-            hosts:
-              - localhost
-            path: /grafana
           additionalDataSources:
             - name: loki
               type: loki
@@ -315,7 +207,7 @@ spec:
 EOF
 ```
 
-- Deploy loki-stack
+3. Add loki-stack
 ```yaml
 cat > argocd/applications/loki-stack.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
@@ -348,27 +240,48 @@ spec:
 EOF
 ```
 
-- Commit and push
-- Access Grafana UI
-https://localhost/grafana
+4. Commit and push
+```sh
+git commit -a -m "deploy kube-prometheus stack and loki" && git push
+```
+
+### Access Grafana
+```sh
+kubectl port-forward svc/grafana 3000:3000
+```
+Open https://localhost:3000
 
 Username: admin  
 Password: prom-operator
 
 ## Disaster recovery
-- Delete kind cluster
+1. Delete kind cluster
 ```sh
 kind cluster delete
 ```
-- Recreate the cluster
-- Install Argo CD in the new cluster
-- Cluster recovered
+2. Recreate the cluster
+```sh
+kind create cluster --config kind-config.yaml
+```
+
+3. Install Argo CD in the new cluster
+```sh
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+4. Apply the `main-app` manifest
+```sh
+kubectl apply -f argocd/applications/main-app.yaml
+```
+
+Cluster recovered!
 
 
 # Chapter 3
 ## Crossplane
 
-- Deploy crossplane
+1. Deploy crossplane
 ```yaml
 cat > argocd/applications/crossplane.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
@@ -399,7 +312,7 @@ spec:
 EOF
 ```
 
-- Create Application for DigitalOcean provider manifests
+2. Create Application for DigitalOcean provider manifests
 ```yaml
 cat > argocd/applications/crossplane-do.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
@@ -427,12 +340,12 @@ spec:
 EOF
 ```
 
-- Create secret containing the token from DigitalOcean
-1. Create token env var
+3. Create a Secret containing the token from DigitalOcean
+- Create token env var
 ```sh
 export DO_TOKEN=<your-do-token>
 ```
-2. Create secret
+- Create secret
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
@@ -445,15 +358,21 @@ stringData:
   token: ${DO_TOKEN}
 ```
 
-- Create droplet
+4. Create an env var with lowercase letters only
+```sh
+export LC_USER=$(echo "$GH_USERNAME" | tr '[:upper:]' '[:lower:]')
+echo $LC_USER # must be lowercase
+```
+
+4. Create droplet
 ```yaml
 cat > crossplane-do/droplet.yaml <<EOF
 apiVersion: compute.do.crossplane.io/v1alpha1
 kind: Droplet
 metadata:
-  name: ${GH_USERNAME}-crossplane-droplet
+  name: ${LC_USER}-crossplane-droplet
   annotations:
-    crossplane.io/external-name: ${GH_USERNAME}-crossplane-droplet
+    crossplane.io/external-name: ${LC_USER}-crossplane-droplet
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   forProvider:
@@ -475,17 +394,17 @@ doctl compute droplet list
 
 ### Delete droplet
 ```sh
-doctl compute droplet delete crossplane-droplet
+doctl compute droplet delete ${LC_USER}-crossplane-droplet
 ```
 Wait for droplet to be recreated by Crossplane
 
 - Create k8s cluster
 ```yaml
-cat > crossplane-do/droplet.yaml <<EOF
+cat > crossplane-do/k8s-cluster.yaml <<EOF
 apiVersion: kubernetes.do.crossplane.io/v1alpha1
 kind: DOKubernetesCluster
 metadata:
-  name: ${GH_USERNAME}-k8s-cluster
+  name: ${LC_USER}-k8s-cluster
   annotations:
     argocd.argoproj.io/sync-wave: "3"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
@@ -498,7 +417,7 @@ spec:
     nodePools:
       - size: s-1vcpu-2gb
         count: 1
-        name: ${GH_USERNAME}-worker-pool
+        name: ${LC_USER}-worker-pool
     maintenancePolicy:
       startTime: "00:00"
       day: wednesday
@@ -508,9 +427,9 @@ spec:
 EOF
 ```
 
-- Get kubeconfig
+- Get the kubeconfig
 ```sh
-doctl kubernetes cluster kubeconfig save k8s-cluster
+doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
 ```
 
 
