@@ -114,6 +114,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: test-secret
+  namespace: default
 stringData:
   my-key: my-value
 EOF
