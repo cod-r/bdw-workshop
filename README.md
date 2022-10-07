@@ -277,6 +277,11 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 kubectl apply -f argocd/applications/main-app.yaml
 ```
 
+5. Print the new password
+```sh
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+```
+
 Cluster recovered!
 
 
