@@ -243,7 +243,7 @@ EOF
 
 4. Commit and push
 ```sh
-git add . && git commit  -m "deploy kube-prometheus stack and loki" && git push
+git add . && git commit  -m "deploy kube-prometheus-stack and loki" && git push
 ```
 
 ### Access Grafana
