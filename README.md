@@ -3,6 +3,7 @@
 ## Prerequisites
 - [docker](https://docs.docker.com/engine/install/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries)
+  - Present alternatives
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 - [doctl](https://docs.digitalocean.com/reference/doctl/how-to/install)
 - [GitHub Account](https://github.com/signup)
@@ -10,8 +11,10 @@
 1. Go to https://github.com
 2. Search for `bdw-workshop`
 3. Click `cod-r/bdw-workshop`
-4. Click Fork -> Create Fork
+4. Right upper corner -> Click Fork -> Create Fork
 5. Add your Github Username to an environment variable
+
+IMPORTANT
 ```sh
 export GH_USERNAME=<your-gh-username>
 ```
@@ -19,6 +22,7 @@ export GH_USERNAME=<your-gh-username>
 ```sh
 echo $GH_USERNAME
 git clone https://github.com/${GH_USERNAME}/bdw-workshop.git
+cd bdw-workshop
 ```
 
 # Chapter 1
