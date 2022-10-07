@@ -375,7 +375,7 @@ git add . && git commit  -m "create digitalocean droplet via crossplane" && git 
 
 - Create token env var
 ```sh
-export DO_TOKEN=<your-do-token>
+DO_TOKEN=<your-do-token>
 ```
 
 - Create secret
@@ -389,6 +389,7 @@ metadata:
 type: Opaque
 stringData:
   token: ${DO_TOKEN}
+EOF
 ```
 
 6. Setup doctl
