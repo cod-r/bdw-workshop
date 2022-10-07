@@ -259,7 +259,7 @@ Password: prom-operator
 ## Disaster recovery
 1. Delete kind cluster
 ```sh
-kind cluster delete
+kind delete cluster
 ```
 2. Recreate the cluster
 ```sh
