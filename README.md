@@ -451,7 +451,7 @@ cat > crossplane-do/droplet.yaml <<EOF
 apiVersion: compute.do.crossplane.io/v1alpha1
 kind: Droplet
 metadata:
-  name: crossplane-droplet
+  name: ${GH_USERNAME}-crossplane-droplet
   annotations:
     crossplane.io/external-name: crossplane-droplet
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
