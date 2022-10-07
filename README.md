@@ -386,6 +386,15 @@ spec:
 EOF
 ```
 
+### Setup doctl
+```sh
+doctl auth init
+```
+### Check droplet
+```sh
+doctl compute droplet list 
+```
+
 ## GKE
 - Get kubeconfig
 ```sh
