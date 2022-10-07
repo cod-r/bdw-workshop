@@ -191,6 +191,7 @@ spec:
         prometheus:
           prometheusSpec:
             retention: 7d
+        grafana:
           additionalDataSources:
             - name: loki
               type: loki
