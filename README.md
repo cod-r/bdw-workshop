@@ -11,11 +11,13 @@
 2. Search for `bdw-workshop`
 3. Click `cod-r/bdw-workshop`
 4. Click Fork -> Create Fork
-5. Clone the forked repo
+5. Add your Github Username to an environment variable
 ```sh
 export GH_USERNAME=<your-gh-username>
+```
+6. Clone the forked repo
+```sh
 echo $GH_USERNAME
-
 git clone https://github.com/${GH_USERNAME}/bdw-workshop.git
 ```
 
@@ -35,10 +37,33 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 ```
 
 ### Change refresh interval
+- Create `argocd` directory
+```shell
+mkdir argocd
+```
+
+- Create ConfigMap
+```yaml
+cat > argocd/argocd-cm.yaml <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+  name: argocd-cm
+  namespace: argocd
+data:
+  timeout.reconciliation: 10s
+  exec.enabled: "true"
+EOF
+```
+- Apply ConfigMap
 ```sh
 kubectl apply -f argocd/argocd-cm.yaml
 ```
-Redeploy `argocd-application-controller` for changes to take effect
+
+- Redeploy `argocd-application-controller` for changes to take effect
 
 ```sh
 kubectl -n argocd rollout restart statefulset argocd-application-controller
@@ -97,6 +122,12 @@ EOF
 ```sh
 kubectl apply -f argocd/applications/main-app.yaml
 ```
+- Commit and push
+```sh
+git add .
+git commit -m "a gitops test"
+git push
+```
 
 After applying the manifest we can add other manifests in `argocd/applications` and Argo CD will apply them automatically.
 
@@ -113,12 +144,7 @@ stringData:
 EOF
 ```
 
-- Push changes
-```sh
-git add .
-git commit -m "a gitops test"
-git push
-```
+- Commit and push
 
 - Verify
 ```sh
@@ -381,7 +407,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/cod-r/bdw-workshop.git
+    repoURL: https://github.com/${GH_USERNAME}/bdw-workshop.git
     path: crossplane-do
   destination:
     server: https://kubernetes.default.svc
@@ -441,6 +467,12 @@ doctl auth init
 ```sh
 doctl compute droplet list 
 ```
+
+### Delete droplet
+```sh
+doctl compute droplet delete crossplane-droplet
+```
+Wait for droplet to be recreated by Crossplane
 
 - Create k8s cluster
 ```yaml
