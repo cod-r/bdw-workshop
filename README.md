@@ -121,7 +121,7 @@ EOF
 
 2. Commit and push
 ```sh
-git commit -a -m "initial argocd setup" && git push
+git add . && git commit  -m "initial argocd setup" && git push
 ```
 
 3. Verify secret
@@ -242,7 +242,7 @@ EOF
 
 4. Commit and push
 ```sh
-git commit -a -m "deploy kube-prometheus stack and loki" && git push
+git add . && git commit  -m "deploy kube-prometheus stack and loki" && git push
 ```
 
 ### Access Grafana
@@ -310,6 +310,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
 EOF
+git add . && git commit  -m "deploy crossplane" && git push
 ```
 
 2. Create Application for DigitalOcean provider manifests
@@ -338,27 +339,10 @@ spec:
     syncOptions:
       - CreateNamespace=true
 EOF
+git add . && git commit  -m "add crossplane digitalocean provider" && git push
 ```
 
-3. Create a Secret containing the token from DigitalOcean
-- Create token env var
-```sh
-export DO_TOKEN=<your-do-token>
-```
-- Create secret
-```yaml
-kubectl apply -f -<<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  namespace: crossplane-do
-  name: provider-do-secret
-type: Opaque
-stringData:
-  token: ${DO_TOKEN}
-```
-
-4. Create an env var with lowercase letters only
+3. Create an env var with lowercase letters only
 ```sh
 export LC_USER=$(echo "$GH_USERNAME" | tr '[:upper:]' '[:lower:]')
 echo $LC_USER # must be lowercase
@@ -382,24 +366,46 @@ spec:
   providerConfigRef:
     name: do-config
 EOF
+git add . && git commit  -m "create digitalocean droplet via crossplane" && git push
 ```
-5. Setup doctl
+
+5. Create a Secret containing the token from DigitalOcean
+
+- Create token env var
+```sh
+export DO_TOKEN=<your-do-token>
+```
+
+- Create secret
+```yaml
+kubectl apply -f -<<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: crossplane-do
+  name: provider-do-secret
+type: Opaque
+stringData:
+  token: ${DO_TOKEN}
+```
+
+6. Setup doctl
 ```sh
 doctl auth init -t ${DO_TOKEN}
 ```
 
-6. List droplets
+7. List droplets
 ```sh
 doctl compute droplet list 
 ```
 
-7. Delete droplet
+8. Delete droplet
 ```sh
 doctl compute droplet delete ${LC_USER}-crossplane-droplet
 ```
 Wait for droplet to be recreated by Crossplane
 
-8. Create k8s cluster
+9. Create k8s cluster
 ```yaml
 cat > crossplane-do/k8s-cluster.yaml <<EOF
 apiVersion: kubernetes.do.crossplane.io/v1alpha1
@@ -426,15 +432,16 @@ spec:
     surgeUpgrade: false
     highlyAvailable: false
 EOF
+git add . && git commit  -m "create digitalocean k8s cluster via crossplane" && git push
 ```
 
-9. Get the kubeconfig
+10. Get the kubeconfig
 ```sh
 doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
 ```
 The kubectl context will change.
 
-10. Check cluster connection
+11. Check cluster connection
 ```sh
 kubectl get nodes
 ```
