@@ -485,7 +485,7 @@ cat > crossplane-do/droplet.yaml <<EOF
 apiVersion: kubernetes.do.crossplane.io/v1alpha1
 kind: DOKubernetesCluster
 metadata:
-  name: k8s-cluster
+  name: ${GH_USERNAME}-k8s-cluster
   annotations:
     argocd.argoproj.io/sync-wave: "3"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
@@ -498,7 +498,7 @@ spec:
     nodePools:
       - size: s-1vcpu-2gb
         count: 1
-        name: worker-pool
+        name: ${GH_USERNAME}-worker-pool
     maintenancePolicy:
       startTime: "00:00"
       day: wednesday
