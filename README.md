@@ -324,8 +324,18 @@ https://localhost/grafana
 Username: admin  
 Password: prom-operator
 
+## Disaster recovery
+- Delete kind cluster
+```sh
+kind cluster delete
+```
+- Recreate the cluster
+- Install Argo CD in the new cluster
+- Cluster recovered
+
+
 # Chapter 3
-Crossplane
+## Crossplane
 
 - Deploy crossplane
 ```yaml
@@ -386,6 +396,42 @@ spec:
 EOF
 ```
 
+- Create secret containing the token from DigitalOcean
+1. Create token env var
+```sh
+export DO_TOKEN=<your-do-token>
+```
+2. Create secret
+```yaml
+kubectl apply -f -<<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: crossplane-do
+  name: provider-do-secret
+type: Opaque
+stringData:
+  token: ${DO_TOKEN}
+```
+
+- Create droplet
+```yaml
+cat > crossplane-do/droplet.yaml <<EOF
+apiVersion: compute.do.crossplane.io/v1alpha1
+kind: Droplet
+metadata:
+  name: crossplane-droplet
+  annotations:
+    crossplane.io/external-name: crossplane-droplet
+spec:
+  forProvider:
+    region: fra1
+    size: s-1vcpu-1gb
+    image: ubuntu-20-04-x64
+  providerConfigRef:
+    name: do-config
+EOF
+```
 ### Setup doctl
 ```sh
 doctl auth init
@@ -394,6 +440,41 @@ doctl auth init
 ```sh
 doctl compute droplet list 
 ```
+
+- Create k8s cluster
+```yaml
+cat > crossplane-do/droplet.yaml <<EOF
+apiVersion: kubernetes.do.crossplane.io/v1alpha1
+kind: DOKubernetesCluster
+metadata:
+  name: k8s-cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  providerConfigRef:
+    name: do-config
+  forProvider:
+    region: fra1
+    version: 1.24.4-do.0
+    nodePools:
+      - size: s-1vcpu-2gb
+        count: 1
+        name: worker-pool
+    maintenancePolicy:
+      startTime: "00:00"
+      day: wednesday
+    autoUpgrade: true
+    surgeUpgrade: false
+    highlyAvailable: false
+EOF
+```
+
+- Get kubeconfig
+```sh
+doctl kubernetes cluster kubeconfig save k8s-cluster
+```
+
 
 ## GKE
 - Get kubeconfig
