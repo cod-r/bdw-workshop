@@ -16,7 +16,7 @@
 
 **IMPORTANT:** don't miss this step!
 ```sh
-export GH_USERNAME=<your-gh-username>
+GH_USERNAME=<your-gh-username>
 ```
 6. Clone the forked repo
 ```sh
@@ -351,7 +351,7 @@ git add . && git commit  -m "add crossplane digitalocean provider" && git push
 
 3. Create an env var with lowercase letters only
 ```sh
-export LC_USER=$(echo "$GH_USERNAME" | tr '[:upper:]' '[:lower:]')
+LC_USER=$(echo "$GH_USERNAME" | tr '[:upper:]' '[:lower:]')
 echo $LC_USER # must be lowercase
 ```
 
@@ -443,18 +443,125 @@ EOF
 git add . && git commit  -m "create digitalocean k8s cluster via crossplane" && git push
 ```
 
-10. Get the kubeconfig
+10. List clusters
+```sh
+doctl kubernetes cluster list
+```
+
+11. Get and save kubeconfig
 ```sh
 doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
 ```
 The kubectl context will change.
 
-11. Check cluster connection
+12. Check cluster connection
 ```sh
 kubectl get nodes
 ```
 
+# Chapter 3
+Bootstrapping external clusters
 
+## Connect DO external cluster to Argo CD
+
+1. Create serviceaccount and clusterrolebinding on the destination cluster
+```yaml
+kubectl apply -f -<<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argocd
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: argocd
+  namespace: kube-system
+EOF
+```
+
+2. Get server address, certificate and the token from external cluster
+
+```sh
+CLUSTER_SERVER_ADDRESS=$(kubectl config view --minify -o jsonpath='{.clusters[].cluster.server}')
+TOKEN_SECRET=$(kubectl -n kube-system get sa argocd -o go-template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}')
+CA_CRT=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{index .data "ca.crt"}}')
+TOKEN=$(kubectl -n kube-system get secrets ${TOKEN_SECRET} -o go-template='{{.data.token}}' | base64 -d)
+```
+
+3. Switch context to the cluster where Argo CD is installed
+```sh
+kubectl config use-context CONTEXT_NAME
+```
+
+4. Create cluster secret
+
+```yaml
+kubectl apply -f -<<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: do-cluster-conn-secret
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: cluster
+type: Opaque
+stringData:
+  name: do-cluster
+  server: ${CLUSTER_SERVER_ADDRESS}
+  config: |
+    {
+      "bearerToken": "${TOKEN}",
+      "tlsClientConfig": {
+        "insecure": false,
+        "caData": "${CA_CRT}"
+      }
+    }
+EOF
+```
+
+## Prepare cluster
+1. Create directory for DigitalOcean cluster manifests
+```sh
+mkdir -p clusters/do-cluster
+```
+
+2. Create app to manage the new cluster
+
+```yaml
+cat > argocd/applications/do-k8s-cluster-manifests.yaml <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: do-k8s-cluster-manifests
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/${GH_USERNAME}/bdw-workshop.git
+    path: clusters/do-cluster
+  destination:
+    server: ${CLUSTER_SERVER_ADDRESS}
+  syncPolicy:
+    automated:
+      prune: true 
+      selfHeal: true 
+      allowEmpty: false 
+    syncOptions:
+      - CreateNamespace=true
+EOF
+git add . && git commit  -m "Create app to manage digitalocean k8s cluster" && git push
+```
 
 ## GKE
 - Get kubeconfig
@@ -487,13 +594,7 @@ subjects:
 EOF
 ```
 
-- get server address
-
-```sh
-kubectl cluster-info
-```
-
-- get certificate and the token
+- get server address, certificate and the token
 
 ```sh
 CLUSTER_SERVER_ADDRESS=$(kubectl config view --minify -o jsonpath='{.clusters[].cluster.server}')
