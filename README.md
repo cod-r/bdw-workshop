@@ -78,13 +78,14 @@ kubectl -n argocd rollout restart statefulset argocd-application-controller
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
-Open https://localhost:8080
-
-Username: admin  
-Password
+Password - mai clar
 ```sh
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
 ```
+
+Open https://localhost:8080
+
+Username: admin  
 
 ## Make Argo CD manage itself
 
