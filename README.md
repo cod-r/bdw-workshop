@@ -11,17 +11,18 @@
 1. Go to https://github.com
 2. Search for `bdw-workshop`
 3. Click `cod-r/bdw-workshop`
-4. Right upper corner -> Click Fork -> Create Fork
+4. Click Fork (right upper corner) -> Create Fork
 5. Add your Github Username to an environment variable
 
-**IMPORTANT:** don't miss this step!
+**IMPORTANT:** This variable will be used in next steps.  
+Don't miss this step!
 ```sh
 GH_USERNAME=<your-gh-username>
 ```
 6. Clone the forked repo
 ```sh
 echo $GH_USERNAME
-git clone https://github.com/${GH_USERNAME}/bdw-workshop.git
+git clone git@github.com:${GH_USERNAME}/bdw-workshop.git
 cd bdw-workshop
 ```
 
@@ -39,23 +40,12 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-### Change refresh interval
-```sh
-kubectl apply -f argocd/argocd-cm.yaml
-```
-
-Redeploy `argocd-application-controller` for changes to take effect
-
-```sh
-kubectl -n argocd rollout restart statefulset argocd-application-controller
-```
-
 ### Access Argo CD UI
 ```sh
-kubectl port-forward svc/argocd-server -n argocd 8080:443
+kubectl port-forward svc/argocd-server -n argocd 8083:443
 ```
 
-Open https://localhost:8080
+Open https://localhost:8083
 
 Username: admin  
 Password: `run the command below to print the password`
@@ -107,16 +97,17 @@ kubectl apply -f argocd/applications/main-app.yaml
 After applying the manifest we can add other manifests in `argocd/applications` and Argo CD will apply them automatically.
 
 ### Test GitOps
-1. Create a simple secret manifest
+1. Create a simple pod
 ```yaml
-cat > argocd/applications/test.yaml <<EOF
+cat > argocd/applications/test-pod.yaml <<EOF
 apiVersion: v1
-kind: Secret
+kind: Pod
 metadata:
-  name: test-secret
-  namespace: default
-stringData:
-  my-key: my-value
+  name: test-nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.23.1
 EOF
 ```
 
@@ -125,9 +116,9 @@ EOF
 git add . && git commit  -m "initial argocd setup" && git push
 ```
 
-3. Verify secret
+3. Check created pod
 ```sh
-kubectl get secrets
+kubectl get pods
 ```
 
 # Chapter 2
@@ -355,7 +346,8 @@ LC_USER=$(echo "$GH_USERNAME" | tr '[:upper:]' '[:lower:]')
 echo $LC_USER # must be lowercase
 ```
 
-4. Create droplet
+4. Create droplet  
+A droplet is a DigitalOcean VM.
 ```yaml
 cat > crossplane-do/droplet.yaml <<EOF
 apiVersion: compute.do.crossplane.io/v1alpha1
@@ -375,8 +367,9 @@ spec:
 EOF
 git add . && git commit  -m "create digitalocean droplet via crossplane" && git push
 ```
+Droplet creation will fail because we don't have credentials to access DigitalOcean.
 
-5. Create a Secret containing the token from DigitalOcean
+5. Create a Secret containing the access token from DigitalOcean
 
 - Create token env var
 ```sh
@@ -411,9 +404,9 @@ doctl compute droplet list
 ```sh
 doctl compute droplet delete ${LC_USER}-crossplane-droplet
 ```
-Wait for droplet to be recreated by Crossplane
+Wait for droplet to be recreated by Crossplane.
 
-9. Create k8s cluster
+### Create a k8s cluster
 ```yaml
 cat > crossplane-do/k8s-cluster.yaml <<EOF
 apiVersion: kubernetes.do.crossplane.io/v1alpha1
@@ -443,18 +436,18 @@ EOF
 git add . && git commit  -m "create digitalocean k8s cluster via crossplane" && git push
 ```
 
-10. List clusters
+1. List clusters
 ```sh
 doctl kubernetes cluster list
 ```
 
-11. Get and save kubeconfig
+2. Get and save kubeconfig
 ```sh
 doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
 ```
 The kubectl context will change.
 
-12. Check cluster connection
+3. Check cluster connection
 ```sh
 kubectl get nodes
 ```
@@ -462,9 +455,9 @@ kubectl get nodes
 # Chapter 3
 Bootstrapping external clusters
 
-## Connect DO external cluster to Argo CD
+## Connect DigitalOcean external cluster to Argo CD
 
-1. Create serviceaccount and clusterrolebinding on the destination cluster
+1. Create a serviceaccount and clusterrolebinding on the destination cluster
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
@@ -489,7 +482,6 @@ EOF
 ```
 
 2. Get server address, certificate and the token from external cluster
-
 ```sh
 CLUSTER_SERVER_ADDRESS=$(kubectl config view --minify -o jsonpath='{.clusters[].cluster.server}')
 TOKEN_SECRET=$(kubectl -n kube-system get sa argocd -o go-template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}')
@@ -503,13 +495,13 @@ echo $TOKEN
 
 ```
 
-3. Switch context to the cluster where Argo CD is installed
+3. Switch context to the cluster where Argo CD is installed  
+For kind CONTEXT_NAME is `kind-kind`.
 ```sh
 kubectl config use-context CONTEXT_NAME
 ```
 
 4. Create cluster secret
-
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
@@ -548,7 +540,6 @@ cp argocd/applications/loki-stack.yaml clusters/do-cluster/
 ```
 
 3. Create app to apply the manifests in the new cluster
-
 ```yaml
 cat > argocd/applications/do-k8s-cluster-manifests.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
