@@ -10,7 +10,7 @@ spec:
     name: do-config
   forProvider:
     region: fra1
-    version: 1.24.4-do.0
+    version: 1.23.10-do.0
     nodePools:
       - size: s-1vcpu-2gb
         count: 1
