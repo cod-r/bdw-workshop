@@ -14,7 +14,7 @@ spec:
     server: https://3c3cb819-77e0-4aaa-bb9e-3a63d9921c65.k8s.ondigitalocean.com
   syncPolicy:
     automated:
-      prune: true 
+      prune: false 
       selfHeal: true 
       allowEmpty: true 
     syncOptions:
