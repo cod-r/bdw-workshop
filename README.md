@@ -102,6 +102,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: test-nginx
+  namespace: default
 spec:
   containers:
   - name: nginx
@@ -111,7 +112,7 @@ EOF
 
 2. Commit and push
 ```sh
-git add . && git commit  -m "initial argocd setup" && git push
+git add . && git commit  -m "argocd setup test" && git push
 ```
 
 3. Check created pod
