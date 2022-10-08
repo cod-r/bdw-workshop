@@ -534,7 +534,7 @@ stringData:
 EOF
 ```
 
-## Prepare cluster
+## Bootstrap the new cluster
 1. Create directory for DigitalOcean cluster manifests
 ```sh
 mkdir -p clusters/do-cluster
