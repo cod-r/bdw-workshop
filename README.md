@@ -442,7 +442,8 @@ digitalocean/doctl kubernetes cluster list
 2. Save the new cluster kubeconfig
 ```sh
 docker run -it -e DIGITALOCEAN_ACCESS_TOKEN=${DO_TOKEN} \
-digitalocean/doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
+-v ~/.kube:/root/.kube \
+digitalocean/doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${LC_USER}-k8s-cluster
 ```
 The kubectl context will change.
 
