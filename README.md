@@ -7,7 +7,7 @@
   - Or any other kubernetes cluster (Rancher Desktop, k3d, minikube etc.)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 - [GitHub Account](https://github.com/signup)
-  - [Add your ssh key to your GitHub account](github-ssh.md)
+- [Add your ssh key to your GitHub account](github-ssh.md)
 - Fork this repository on GitHub: https://github.com/cod-r/bdw-workshop
 1. Click Fork (right upper corner) -> Create Fork
 2. Add your Github Username to an environment variable
