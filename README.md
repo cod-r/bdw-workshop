@@ -441,7 +441,7 @@ git add . && git commit  -m "create digitalocean k8s cluster via crossplane" && 
 doctl kubernetes cluster list
 ```
 
-2. Get and save kubeconfig
+2. Save the new cluster kubeconfig
 ```sh
 doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
 ```
@@ -495,13 +495,13 @@ echo $TOKEN
 
 ```
 
-3. Switch context to the cluster where Argo CD is installed  
+3. Switch kubectl context to the cluster where Argo CD is installed  
 For kind CONTEXT_NAME is `kind-kind`.
 ```sh
 kubectl config use-context CONTEXT_NAME
 ```
 
-4. Create cluster secret
+4. Create Argo CD cluster secret
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
@@ -579,16 +579,52 @@ kubectl get pods -n monitoring
 
 
 
+# Extra Chapter
+## Google Cloud Platform
 
-## GKE
-- Get kubeconfig
+1. Configure your GCP account to be ready for integration with Crossplane
+
+See [official documentation](https://github.com/crossplane/crossplane.github.io/blob/master/content/docs/v1.9/cloud-providers/gcp/gcp-provider.md)
+
+2. Create Application for Google Cloud provider manifests
+```yaml
+cat > argocd/applications/crossplane-gcp.yaml <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-gcp-resources
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/${GH_USERNAME}/bdw-workshop.git
+    path: crossplane-gcp
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-gcp
+  syncPolicy:
+    automated:
+      prune: true 
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+EOF
+git add . && git commit  -m "add crossplane google cloud provider" && git push
+```
+
+3. Create ProviderConfig secret
+
+4. Save the new GKE cluster kubeconfig
 ```sh
 gcloud container clusters get-credentials gke-cluster
 ```
 
-## Connect DO external cluster to Argo CD
+## Connect GKE external cluster to Argo CD
 
-1. Create serviceaccount and clusterrolebinding on the destination cluster
+1. Create a serviceaccount and clusterrolebinding on the destination cluster
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
@@ -626,12 +662,12 @@ echo $CA_CRT
 echo $TOKEN
 ```
 
-3. Switch context to the cluster where Argo CD is installed
+3. Switch kubectl context to the cluster where Argo CD is installed  
 ```sh
 kubectl config use-context CONTEXT_NAME
 ```
 
-4. Create cluster secret
+4. Create Argo CD cluster secret
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
