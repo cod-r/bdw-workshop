@@ -7,6 +7,7 @@
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 - [doctl](https://docs.digitalocean.com/reference/doctl/how-to/install)
 - [GitHub Account](https://github.com/signup)
+  - [Add your ssh key to your GitHub account](github-ssh.md)
 - Fork this repository on GitHub: https://github.com/cod-r/bdw-workshop
 1. Go to https://github.com
 2. Search for `bdw-workshop`
