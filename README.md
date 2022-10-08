@@ -1,31 +1,28 @@
 # Using ArgoCD and Crossplane for Bootstrapping K8s Clusters
 
 ## Prerequisites
+- Access https://github.com/cod-r/bdw-workshop
 - [docker](https://docs.docker.com/engine/install/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries)
   - Or any other kubernetes cluster (Rancher Desktop, k3d, minikube etc.)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
-- [doctl](https://docs.digitalocean.com/reference/doctl/how-to/install)
 - [GitHub Account](https://github.com/signup)
   - [Add your ssh key to your GitHub account](github-ssh.md)
 - Fork this repository on GitHub: https://github.com/cod-r/bdw-workshop
-1. Go to https://github.com
-2. Search for `bdw-workshop`
-3. Click `cod-r/bdw-workshop`
-4. Click Fork (right upper corner) -> Create Fork
-5. Add your Github Username to an environment variable
+1. Click Fork (right upper corner) -> Create Fork
+2. Add your Github Username to an environment variable
 
-**IMPORTANT:** This variable will be used in next steps.  
+**IMPORTANT:** This variable will be used in the next steps.  
 Don't miss this step!
 ```sh
 GH_USERNAME=<your-gh-username>
 ```
-6. Clone the forked repo
+3. Clone the forked repo
 ```sh
 echo $GH_USERNAME
 git clone git@github.com:${GH_USERNAME}/bdw-workshop.git
 cd bdw-workshop
-```
+``` 
 
 # Chapter 1
 Initial Argo CD setup
@@ -372,6 +369,7 @@ Droplet creation will fail because we don't have credentials to access DigitalOc
 
 5. Create a Secret containing the access token from DigitalOcean
 
+- Access https://shorturl.at/fiKQ7
 - Create token env var
 ```sh
 DO_TOKEN=<your-do-token>
@@ -391,19 +389,16 @@ stringData:
 EOF
 ```
 
-6. Setup doctl
+6. List droplets
 ```sh
-doctl auth init -t ${DO_TOKEN}
+docker run -it -e DIGITALOCEAN_ACCESS_TOKEN=${DO_TOKEN} \
+digitalocean/doctl compute droplet list 
 ```
 
-7. List droplets
+7. Delete droplet
 ```sh
-doctl compute droplet list 
-```
-
-8. Delete droplet
-```sh
-doctl compute droplet delete ${LC_USER}-crossplane-droplet
+docker run -it -e DIGITALOCEAN_ACCESS_TOKEN=${DO_TOKEN} \
+digitalocean/doctl compute droplet delete ${LC_USER}-crossplane-droplet
 ```
 Wait for droplet to be recreated by Crossplane.
 
@@ -439,12 +434,14 @@ git add . && git commit  -m "create digitalocean k8s cluster via crossplane" && 
 
 1. List clusters
 ```sh
-doctl kubernetes cluster list
+docker run -it -e DIGITALOCEAN_ACCESS_TOKEN=${DO_TOKEN} \
+digitalocean/doctl kubernetes cluster list
 ```
 
 2. Save the new cluster kubeconfig
 ```sh
-doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
+docker run -it -e DIGITALOCEAN_ACCESS_TOKEN=${DO_TOKEN} \
+digitalocean/doctl kubernetes cluster kubeconfig save ${LC_USER}-k8s-cluster
 ```
 The kubectl context will change.
 
