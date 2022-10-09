@@ -403,6 +403,12 @@ digitalocean/doctl compute droplet delete ${LC_USER}-crossplane-droplet
 ```
 Wait for droplet to be recreated by Crossplane.
 
+8. Delete droplet using Crossplane
+```sh
+rm crossplane-do/droplet.yaml
+git add . && git commit  -m "delete digitalocean droplet" && git push
+```
+
 ### Create a k8s cluster
 ```yaml
 cat > crossplane-do/k8s-cluster.yaml <<EOF
@@ -539,7 +545,7 @@ cp argocd/applications/kube-prometheus-stack.yaml clusters/do-cluster/
 cp argocd/applications/loki-stack.yaml clusters/do-cluster/
 ```
 
-3. Create app to apply the manifests in the new cluster
+3. Create Argo CD app to apply the manifests in the new cluster
 ```yaml
 cat > argocd/applications/do-k8s-cluster-manifests.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
@@ -617,14 +623,19 @@ git add . && git commit  -m "add crossplane google cloud provider" && git push
 
 3. Create ProviderConfig secret
 
-4. Save the new GKE cluster kubeconfig
+4. Check if the cluster has been created
+```sh
+gcloud container clusters list
+```
+
+5. Save the new GKE cluster kubeconfig
 ```sh
 gcloud container clusters get-credentials gke-cluster
 ```
 
 ## Connect GKE external cluster to Argo CD
 
-1. Create a serviceaccount and clusterrolebinding on the destination cluster
+1. Create a serviceaccount and clusterrolebinding on the GKE cluster
 ```yaml
 kubectl apply -f -<<EOF
 apiVersion: v1
@@ -648,7 +659,7 @@ subjects:
 EOF
 ```
 
-2. Get server address, certificate and the token from external cluster
+2. Get server address, certificate and the token from GKE cluster
 
 ```sh
 CLUSTER_SERVER_ADDRESS=$(kubectl config view --minify -o jsonpath='{.clusters[].cluster.server}')
@@ -692,3 +703,57 @@ stringData:
 EOF
 ```
 
+### Deploy a pod in the new cluster via Argo CD
+1. Create directory for GKE cluster manifests
+```sh
+mkdir -p clusters/gke-cluster
+```
+
+2. Create Pod manifest
+```yaml
+cat > clusters/gke-cluster/test-pod.yaml <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-nginx
+  namespace: default
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.23.1
+EOF
+```
+
+3. Create Argo CD app to apply the manifests in the new cluster
+```yaml
+cat > argocd/applications/gke-cluster-manifests.yaml <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gke-cluster-manifests
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/${GH_USERNAME}/bdw-workshop.git
+    path: clusters/gke-cluster
+  destination:
+    server: ${CLUSTER_SERVER_ADDRESS}
+  syncPolicy:
+    automated:
+      prune: true 
+      selfHeal: true 
+      allowEmpty: false 
+    syncOptions:
+      - CreateNamespace=true
+EOF
+git add . && git commit  -m "Create app to manage GKE cluster" && git push
+```
+
+4. Check the deployed apps in the new cluster
+```sh
+kubectl config use-context GKE_CLUSTER_CONTEXT
+kubectl get pods
+```
