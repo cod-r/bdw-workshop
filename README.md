@@ -458,7 +458,7 @@ The kubectl context will change.
 kubectl get nodes
 ```
 
-# Chapter 3
+# Chapter 4
 Bootstrapping external clusters
 
 ## Connect DigitalOcean external cluster to Argo CD
@@ -579,13 +579,7 @@ kubectl config use-context do-fra1-${LC_USER}-k8s-cluster
 kubectl get pods -n monitoring
 ```
 
-
-
-
-
-
-
-# Extra Chapter
+# Chapter 5
 ## Google Cloud Platform
 
 1. Configure your GCP account to be ready for integration with Crossplane
