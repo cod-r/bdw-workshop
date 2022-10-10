@@ -23,7 +23,7 @@ spec:
               type: loki
               url: http://loki-stack.monitoring.svc.cluster.local:3100
   destination:
-    server: https://kubernetes.default.svc
+    server: https://0858a964-f548-4008-baee-45a82931561e.k8s.ondigitalocean.com
     namespace: monitoring
   syncPolicy:
     automated:

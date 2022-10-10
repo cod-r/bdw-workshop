@@ -10,7 +10,7 @@ metadata:
 spec:
   project: default
   destination:
-    server: "https://kubernetes.default.svc"
+    server: https://0858a964-f548-4008-baee-45a82931561e.k8s.ondigitalocean.com
     namespace: monitoring
   source:
     repoURL: https://github.com/prometheus-community/helm-charts.git
