@@ -9,10 +9,3 @@ metadata:
 data:
   timeout.reconciliation: 30s
   exec.enabled: "true"
-  resource.exclusions: |
-    - apiGroups:
-        - cilium.io
-      kinds:
-        - CiliumIdentity
-      clusters:
-        - "*"
