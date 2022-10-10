@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com//bdw-workshop.git
+    repoURL: https://github.com/erhanmamut/bdw-workshop.git
     path: argocd
     directory:
       recurse: true
