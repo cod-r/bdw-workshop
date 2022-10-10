@@ -579,7 +579,6 @@ kubectl config use-context do-fra1-${LC_USER}-k8s-cluster
 kubectl get pods -n monitoring
 ```
 
-# Chapter 5
 ## Google Cloud Platform
 
 1. Configure your GCP account to be ready for integration with Crossplane
