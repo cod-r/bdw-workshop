@@ -534,9 +534,14 @@ EOF
 
 ## Bootstrap the new cluster
 
-1. Add kube-prometheus-stack CRDs
+1. Create directory for DigitalOcean cluster manifests
+```sh
+mkdir -p argocd/do-cluster
+```
+
+2. Add kube-prometheus-stack CRDs
 ```yaml
-cat > argocd/applications/do-kube-prometheus-stack-crds.yaml <<EOF
+cat > argocd/do-cluster/kube-prometheus-stack-crds.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -570,7 +575,7 @@ EOF
 
 2. Add kube-prometheus-stack
 ```yaml
-cat > argocd/applications/do-kube-prometheus-stack.yaml <<EOF
+cat > argocd/do-cluster/kube-prometheus-stack.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -610,7 +615,7 @@ EOF
 
 3. Add loki-stack
 ```yaml
-cat > argocd/applications/do-loki-stack.yaml <<EOF
+cat > argocd/do-cluster/do-loki-stack.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
