@@ -533,47 +533,120 @@ EOF
 ```
 
 ## Bootstrap the new cluster
-1. Create directory for DigitalOcean cluster manifests
-```sh
-mkdir -p clusters/do-cluster
-```
 
-2. Add monitoring apps
-```sh
-cp argocd/applications/kube-prometheus-stack-crds.yaml clusters/do-cluster/
-cp argocd/applications/kube-prometheus-stack.yaml clusters/do-cluster/
-cp argocd/applications/loki-stack.yaml clusters/do-cluster/
-```
-
-3. Create Argo CD app to apply the manifests in the new cluster
+1. Add kube-prometheus-stack CRDs
 ```yaml
-cat > argocd/applications/do-k8s-cluster-manifests.yaml <<EOF
+cat > argocd/applications/do-kube-prometheus-stack-crds.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: do-k8s-cluster-manifests
+  name: do-kube-prometheus-stack-crds
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  destination:
+    server: ${CLUSTER_SERVER_ADDRESS}
+    namespace: monitoring
+  source:
+    repoURL: https://github.com/prometheus-community/helm-charts.git
+    path: charts/kube-prometheus-stack/crds/
+    targetRevision: kube-prometheus-stack-40.3.1
+    directory:
+      recurse: true
+  syncPolicy:
+    automated:
+      prune: true 
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+EOF
+```
+
+2. Add kube-prometheus-stack
+```yaml
+cat > argocd/applications/do-kube-prometheus-stack.yaml <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: do-kube-prometheus-stack
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/${GH_USERNAME}/bdw-workshop.git
-    path: clusters/do-cluster
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 40.3.1
+    chart: kube-prometheus-stack
+    helm:
+      skipCrds: true
+      values: |
+        prometheus:
+          prometheusSpec:
+            retention: 7d
+        grafana:
+          additionalDataSources:
+            - name: loki
+              type: loki
+              url: http://loki-stack.monitoring.svc.cluster.local:3100
   destination:
     server: ${CLUSTER_SERVER_ADDRESS}
+    namespace: monitoring
   syncPolicy:
     automated:
       prune: true 
-      selfHeal: true 
-      allowEmpty: false 
+      selfHeal: true
+      allowEmpty: false
     syncOptions:
       - CreateNamespace=true
 EOF
-git add . && git commit  -m "Create app to manage digitalocean k8s cluster" && git push
 ```
 
-4. Check the deployed apps in the new cluster
+3. Add loki-stack
+```yaml
+cat > argocd/applications/do-loki-stack.yaml <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: do-loki-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 2.8.3
+    chart: loki-stack
+    helm:
+      values: |
+        loki:
+          enabled: true
+  destination:
+    server: ${CLUSTER_SERVER_ADDRESS}
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true 
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+EOF
+```
+
+4. Commit and push
+```sh
+git add . && git commit  -m "deploy kube-prometheus-stack and loki in digitalocean cluster" && git push
+```
+
+5. Check the deployed apps in the new cluster
 ```sh
 kubectl config use-context do-fra1-${LC_USER}-k8s-cluster
 kubectl get pods -n monitoring
