@@ -1,0 +1,14 @@
+apiVersion: compute.do.crossplane.io/v1alpha1
+kind: Droplet
+metadata:
+  name: erhanmamut-crossplane-droplet
+  annotations:
+    crossplane.io/external-name: erhanmamut-crossplane-droplet
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  forProvider:
+    region: fra1
+    size: s-1vcpu-1gb
+    image: ubuntu-20-04-x64
+  providerConfigRef:
+    name: do-config
