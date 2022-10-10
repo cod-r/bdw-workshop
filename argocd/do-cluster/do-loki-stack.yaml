@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: do-loki-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 2.8.3
+    chart: loki-stack
+    helm:
+      values: |
+        loki:
+          enabled: true
+  destination:
+    server: https://0858a964-f548-4008-baee-45a82931561e.k8s.ondigitalocean.com
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true 
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true

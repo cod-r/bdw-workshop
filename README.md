@@ -615,7 +615,7 @@ EOF
 
 3. Add loki-stack
 ```yaml
-cat > argocd/do-cluster/do-loki-stack.yaml <<EOF
+cat > argocd/do-cluster/loki-stack.yaml <<EOF
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
